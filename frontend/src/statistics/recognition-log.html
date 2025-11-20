@@ -1,0 +1,29 @@
+<div class="container-fluid">
+    <h1>Recognition Log</h1>
+    <form id="filter-form">
+        <label for="startDate">Start Date:</label>
+        <input type="date" id="startDate" name="startDate">
+        <label for="endDate">End Date:</label>
+        <input type="date" id="endDate" name="endDate">
+        <button type="submit">Filter</button>
+    </form>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>User</th>
+                <th>Type</th>
+                <th>Camera</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody id="report-table-body">
+            <!-- Data rows will be dynamically inserted here -->
+        </tbody>
+    </table>
+    
+    <!-- Paginator will be loaded here -->
+    <div id="paginator-placeholder"></div>
+</div>
+
+<script src="/public/js/statistics-client.js"></script>

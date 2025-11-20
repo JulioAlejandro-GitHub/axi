@@ -1,0 +1,39 @@
+<div class="container-fluid">
+    <h1>Recognition Summary 1</h1>
+    <form id="filter-form">
+        <label for="startDate">Start Date:</label>
+        <input type="date" id="startDate" name="startDate">
+        <label for="endDate">End Date:</label>
+        <input type="date" id="endDate" name="endDate">
+        <button type="submit">Filter</button>
+    </form>
+    <div id="piechart" style="width: 900px; height: 500px;"></div>
+    
+    <!-- Paginator will be loaded here -->
+    <div id="paginator-placeholder"></div>
+</div>
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+<script type="text/javascript">
+    // Load the Visualization API and the corechart package.
+    google.charts.load('current', {'packages':['corechart']});
+
+    // Set a callback to run when the Google Visualization API is loaded.
+    // The client-side script will call `drawChart` with data from the API.
+    // google.charts.setOnLoadCallback(drawChart);
+
+    /**
+     * Draws the pie chart.
+     * This function will be called by the client-side script after fetching data.
+     * @param {Array} chartData - The data to visualize, e.g., [['Type', 'Count'], ['known', 10], ['unknown', 5]]
+     */
+    function drawChart(chartData) {
+        var data = google.visualization.arrayToDataTable(chartData);
+
+        var options = {
+            title: 'Recognition Summary 3'
+        };
+
+        var chart = new google.visualization.PieChart(document.getElementById('piechart'));
+        chart.draw(data, options);
+    }
+</script>

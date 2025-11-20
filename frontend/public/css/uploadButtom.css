@@ -1,0 +1,25 @@
+
+.fileinput:hover, .fileinput.hover {
+    color: #ff00ff;
+}
+
+.fileinput:focus, .fileinput.focus {
+    color: #00ff00;
+}
+
+.fileinput:active, .fileinput.active {
+    color: #ff0000;
+}
+
+button.btn {
+    border: 0;
+    color: #ffffff;
+    background-color: #ffffff;
+    background-image: url('http://localhost:8080/img/perfil_frente.png');
+    width: 100px;
+    height: 46px;
+    line-height: 46px;
+    vertical-align: middle;
+    text-align: center;
+    font-size: 75%;
+}

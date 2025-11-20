@@ -1,0 +1,81 @@
+<section id="forms-cuenta" class="w-full max-w-4xl mx-auto py-8 px-4">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+        <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">Request Account Creation</h3>
+        <div id="form-alert-placeholder"></div>
+
+        <form id="addUserForm" class="space-y-6" novalidate>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Nombre -->
+                <div>
+                    <label for="u-nombre" class="block text-sm font-medium text-gray-700 dark:text-gray-200">Name</label>
+                    <input type="text" id="u-nombre" name="nombre" class="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-sm shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500" required>
+                </div>
+
+                <!-- Email -->
+                <div>
+                    <label for="u-email" class="block text-sm font-medium text-gray-700 dark:text-gray-200">Email</label>
+                    <input type="email" id="u-email" name="email" class="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-sm shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500" required>
+                </div>
+
+                <!-- Password -->
+                <div>
+                    <label for="u-password" class="block text-sm font-medium text-gray-700 dark:text-gray-200">Password</label>
+                    <input type="password" id="u-password" name="password" class="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-sm shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500" required>
+                </div>
+
+                <!-- Tipo de Usuario -->
+                <div>
+                    <label for="u-tipo" class="block text-sm font-medium text-gray-700 dark:text-gray-200">Type</label>
+                    <select id="u-tipo" name="tipo" class="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-sm shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" required>
+                        <option selected disabled value="">...</option>
+                        <option value="socio">Partner</option>
+                        <option value="empleado">Employee</option>
+                        <option value="familia">Family</option>
+                    </select>
+                </div>
+
+                <!-- Estado -->
+                <div>
+                    <label for="u-estado" class="block text-sm font-medium text-gray-700 dark:text-gray-200">Status</label>
+                    <select id="u-estado" name="estado" class="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-sm shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" required>
+                        <option value="activo" selected>Active</option>
+                        <option value="inactivo">Inactive</option>
+                    </select>
+                </div>
+
+                <!-- Género -->
+                <div>
+                    <label for="u-gender" class="block text-sm font-medium text-gray-700 dark:text-gray-200">Gender</label>
+                    <select id="u-gender" name="gender" class="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-sm shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" required>
+                        <option value="male" selected>Male</option>
+                        <option value="female">Female</option>
+                    </select>
+                </div>
+            </div>
+
+            <hr class="my-6 border-gray-200 dark:border-gray-700">
+
+            <h4 class="text-lg font-medium text-gray-900 dark:text-white">Profile Pictures</h4>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                    <label for="PerfilIzquierdo" class="block text-sm font-medium text-gray-700 dark:text-gray-200">Left Profile</label>
+                    <input type="file" id="PerfilIzquierdo" name="pIzquirdo" accept="image/*" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                </div>
+                <div>
+                    <label for="PerfilFrontal" class="block text-sm font-medium text-gray-700 dark:text-gray-200">Front Profile</label>
+                    <input type="file" id="PerfilFrontal" name="pFrontal" accept="image/*" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                </div>
+                <div>
+                    <label for="PerfilDerecho" class="block text-sm font-medium text-gray-700 dark:text-gray-200">Right Profile</label>
+                    <input type="file" id="PerfilDerecho" name="pDerecho" accept="image/*" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                </div>
+            </div>
+
+            <hr class="my-6 border-gray-200 dark:border-gray-700">
+
+            <div class="flex justify-end">
+                <button class="px-6 py-3 text-base font-medium tracking-wide text-white capitalize transition-colors duration-300 transform bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-50" type="submit">Create Account</button>
+            </div>
+        </form>
+    </div>
+</section>

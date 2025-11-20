@@ -1,0 +1,131 @@
+/*
+==============================================
+Responsive Styles
+==============================================
+Organized from largest to smallest breakpoint.
+*/
+
+/*
+==============================================
+Large devices (desktops, less than 1200px)
+==============================================
+*/
+@media (max-width: 1199.98px) {
+    /*
+    Override the desktop-first grid layout from cheatsheet.css.
+    This is the most critical change to ensure the layout stacks correctly.
+    */
+    body {
+        display: block !important;
+    }
+
+    .bd-header {
+        position: static; /* Remove fixed position for a natural flow */
+    }
+
+    .bd-aside {
+        display: none; /* Hide the right sidebar on smaller screens */
+    }
+
+    .bd-cheatsheet,
+    .bd-cheatsheet section,
+    .bd-cheatsheet article {
+        display: block !important; /* Revert grid inheritance from cheatsheet.css */
+        padding-top: 1rem;
+    }
+}
+
+/*
+==============================================
+Medium devices (tablets, less than 992px)
+==============================================
+*/
+@media (max-width: 991.98px) {
+    /* Collapse the main navigation menu into a vertical list */
+    .header .container .d-flex {
+        flex-direction: column;
+        align-items: center !important;
+    }
+
+    .header .me-lg-auto {
+        margin-right: 0 !important;
+        margin-bottom: 1rem !important;
+    }
+
+    .header form {
+        width: 100%;
+        margin-bottom: 1rem !important;
+    }
+
+    .header .text-end {
+        width: 100%;
+        text-align: center !important;
+    }
+
+    /* Stack filter lists vertically */
+    .list-group-horizontal {
+        flex-direction: column;
+    }
+
+    .list-group-horizontal .list-group-item {
+        border-right-width: 1px;
+        border-bottom-width: 0;
+    }
+
+     .list-group-horizontal .list-group-item:last-child {
+        border-bottom-width: 1px;
+    }
+
+    /* Use Bootstrap's responsive grid for cards for better stacking */
+    .card-deck-responsive {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 1rem;
+    }
+}
+
+
+/*
+==============================================
+Small devices (landscape phones, less than 768px)
+==============================================
+*/
+@media (max-width: 767.98px) {
+    /* Adjust main content heading for readability */
+    .card-body h1 {
+        font-size: 1.5rem;
+    }
+
+    /* Adjust modal dialogs for small screens */
+    .modal-dialog {
+        max-width: 95%;
+        margin: 1rem auto;
+    }
+
+    /* Ensure forms are full-width */
+    .form-signin, .form-control {
+        width: 100%;
+    }
+}
+
+
+/*
+==============================================
+Extra small devices (portrait phones, less than 576px)
+==============================================
+*/
+@media (max-width: 575.98px) {
+    .bd-cheatsheet {
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+
+    #vmenu .nav-link {
+        padding: 0.5rem; /* Reduce padding on nav links */
+        font-size: 0.9rem; /* Smaller font for very small screens */
+    }
+
+    .display-4 {
+        font-size: 2.5rem; /* Reduce large heading sizes */
+    }
+}

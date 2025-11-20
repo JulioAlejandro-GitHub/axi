@@ -1,0 +1,27 @@
+<div class="container-fluid">
+    <h1>Recognition by User 1</h1>
+    <form id="filter-form">
+        <label for="startDate">Start Date:</label>
+        <input type="date" id="startDate" name="startDate">
+        <label for="endDate">End Date:</label>
+        <input type="date" id="endDate" name="endDate">
+        <label for="user">User:</label>
+        <input type="text" id="user" name="user">
+        <button type="submit">Filter</button>
+    </form>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>User</th>
+                <th>Type</th>
+                <th>Count</th>
+            </tr>
+        </thead>
+        <tbody id="report-table-body">
+            <!-- Data rows will be dynamically inserted here -->
+        </tbody>
+    </table>
+    
+    <!-- Paginator will be loaded here -->
+    <div id="paginator-placeholder"></div>
+</div>

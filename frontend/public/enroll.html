@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Facial Enrollment</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes success-animation {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        .success-animation {
+            animation: success-animation 0.5s ease-in-out;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white flex items-center justify-center min-h-screen">
+
+    <div id="enrollment-container" class="text-center">
+        <h1 class="text-3xl font-bold mb-4">Facial Enrollment</h1>
+        <p class="text-lg text-gray-400 mb-8">Please follow the instructions to complete your enrollment.</p>
+
+        <div id="video-container" class="relative w-64 h-64 sm:w-80 sm:h-80 md:w-96 md:h-96 mx-auto flex items-center justify-center">
+            <video id="video-feed" autoplay playsinline class="w-full h-full object-cover rounded-full"></video>
+            <canvas id="overlay-canvas" class="absolute top-0 left-0 w-full h-full"></canvas>
+            <svg class="absolute top-0 left-0 w-full h-full" viewBox="0 0 100 100" style="transform: rotate(-90deg);">
+                <circle id="progress-background" cx="50" cy="50" r="45" fill="none" stroke="#374151" stroke-width="5"></circle>
+                <circle id="progress-ring" cx="50" cy="50" r="45" fill="none" stroke="#4f46e5" stroke-width="5" stroke-linecap="round" stroke-dasharray="283" stroke-dashoffset="283"></circle>
+            </svg>
+        </div>
+
+        <div id="status-message" class="mt-8 text-2xl font-semibold">
+            <!-- Instructions will be injected here -->
+        </div>
+
+        <div id="success-message" class="hidden mt-8">
+            <div class="success-animation inline-block bg-green-500 rounded-full p-4">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+            </div>
+            <p class="mt-4 text-2xl">Enrollment Completed Successfully!</p>
+        </div>
+    </div>
+
+    <script src="./js/human.js"></script>
+    <script src="./js/modules/enrollment.js"></script>
+    <script src="./js/modules/enrollment-logic.js"></script>
+</body>
+</html>

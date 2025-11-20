@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="es" class="dark">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="title" content="Vigilante SW Reconocimiento Facial">
+    <meta name="description" content="Un sistema de reconocimiento facial moderno, eficiente y amigable.">
+    <meta name="author" content="Jules">
+    <title>Vigilante Dashboard</title>
+
+    <!-- TailwindCSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class'
+        }
+    </script>
+
+    <!-- HLS.js for video streaming -->
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+
+    <!-- Alpine.js for UI interactivity -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-200" x-data="{ sidebarOpen: false }">
+    <div class="flex h-screen overflow-hidden">
+        <!-- Sidebar -->
+        <aside
+            class="fixed inset-y-0 left-0 z-30 w-64 overflow-y-auto transition-transform duration-300 transform -translate-x-full bg-white shadow-lg dark:bg-gray-800 lg:translate-x-0 lg:static lg:inset-0"
+            :class="{'translate-x-0': sidebarOpen, '-translate-x-full': !sidebarOpen}">
+            <div class="flex items-center justify-center p-4">
+                 <a href="#dashboard" data-section="dashboard" class="flex items-center space-x-2 text-white">
+                    <img src="../public/img/ico_recognition.jpeg" data-section="dashboard" class="w-10 h-8 rounded-md" alt="Vigilante Logo">
+                    <span class="text-xl font-bold">Vigilante</span>
+                </a>
+            </div>
+            <nav id="vmenu" class="px-4 py-2">
+                <a href="#dashboard" class="flex items-center px-4 py-2 text-gray-700 rounded-md dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+                    <span class="ml-3" data-section="dashboard">Dashboard</span>
+                </a>
+                <a href="#live" class="flex items-center px-4 py-2 mt-2 text-gray-700 rounded-md dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.55a2 2 0 010 3.998l-4.55 2.275A2 2 0 0113 18V6a2 2 0 012-2z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h9v12H4z"></path></svg>
+                    <span class="ml-3" data-section="live">Video en Vivo</span>
+                </a>
+                <a href="#access-report" class="flex items-center px-4 py-2 mt-2 text-gray-700 rounded-md dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700">
+                   <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+                    <span class="ml-3" data-section="access-report">Registro de Actividad</span>
+                </a>
+
+                <div x-data="{ open: false }" class="mt-2">
+                    <button @click="open = !open" class="flex items-center justify-between w-full px-4 py-2 text-gray-700 rounded-md dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700">
+                        <div class="flex items-center">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                            <span class="ml-3">Administrar</span>
+                        </div>
+                        <svg class="w-4 h-4" :class="{'rotate-180': open}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                    <div x-show="open" x-cloak class="pl-8 mt-2 space-y-2">
+                        <a href="#new_user" class="block px-4 py-2 text-sm text-gray-600 rounded-md dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700" data-section="new_user">Agregar Usuario</a>
+                        <a href="#users" class="block px-4 py-2 text-sm text-gray-600 rounded-md dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700" data-section="users">Ver Usuarios</a>
+                        <a href="#camera" class="block px-4 py-2 text-sm text-gray-600 rounded-md dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700" data-section="camera">Cámaras</a>
+                        <a href="#recognition" class="block px-4 py-2 text-sm text-gray-600 rounded-md dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700" data-section="recognition">Enviar Imagen</a>
+                        <a href="#access-editor" class="hidden" data-section="access-editor"></a>
+                    </div>
+                </div>
+
+                <div x-data="{ open: false }" class="mt-2">
+                    <button @click="open = !open" class="flex items-center justify-between w-full px-4 py-2 text-gray-700 rounded-md dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700">
+                        <div class="flex items-center">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                            <span class="ml-3">Estadísticas</span>
+                        </div>
+                        <svg class="w-4 h-4" :class="{'rotate-180': open}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                    <div x-show="open" x-cloak class="pl-8 mt-2 space-y-2">
+                        <a href="#stats-log" class="block px-4 py-2 text-sm text-gray-600 rounded-md dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700" data-section="stats-log">Registro de Reconocimiento</a>
+                        <a href="#stats-summary" class="block px-4 py-2 text-sm text-gray-600 rounded-md dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700" data-section="stats-summary">Resumen</a>
+                        <a href="#stats-by-user" class="block px-4 py-2 text-sm text-gray-600 rounded-md dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700" data-section="stats-by-user">Por Usuario</a>
+                    </div>
+                </div>
+
+                <a href="#faq" class="flex items-center px-4 py-2 mt-2 text-gray-700 rounded-md dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700" data-section="faq">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <span class="ml-3">FAQs</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main content -->
+        <div class="flex flex-col flex-1 overflow-hidden">
+            <!-- Header -->
+            <header class="flex items-center justify-between p-4 bg-white shadow-md dark:bg-gray-800">
+                <div class="flex items-center">
+                    <button @click="sidebarOpen = !sidebarOpen" class="text-gray-500 dark:text-gray-200 focus:outline-none lg:hidden">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                    </button>
+                    <div class="relative ml-4">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3">
+                            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        </span>
+                        <input type="search" class="w-full py-2 pl-10 pr-4 text-gray-700 bg-gray-100 border border-transparent rounded-md dark:bg-gray-700 dark:text-gray-300 focus:border-blue-500 focus:bg-white dark:focus:bg-gray-600 focus:outline-none" placeholder="Buscar...">
+                    </div>
+                </div>
+                <div class="flex items-center">
+                    <button id="singoutbtn" type="button" class="px-4 py-2 font-medium tracking-wide text-white capitalize transition-colors duration-200 transform bg-red-600 rounded-md hover:bg-red-500 focus:outline-none focus:ring focus:ring-red-300 focus:ring-opacity-80">
+                        Cerrar Sesión
+                    </button>
+                </div>
+            </header>
+
+            <!-- Main area -->
+            <main class="flex-1 p-6 overflow-y-auto">
+                <div id="fullbody">
+                    <!-- Dynamic content will be loaded here -->
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Spinners -->
+    <div id="loadingDiv" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50" style="display: none;">
+        <div class="w-16 h-16 border-4 border-t-4 border-blue-500 rounded-full animate-spin border-t-transparent"></div>
+    </div>
+
+    <!-- Modal -->
+    <div id="staticBackdrop" class="fixed inset-0 z-40 flex items-center justify-center bg-black bg-opacity-50" style="display: none;">
+        <div class="w-full max-w-lg p-6 bg-white rounded-lg shadow-xl dark:bg-gray-800">
+            <div class="flex items-center justify-between pb-3 border-b border-gray-200 dark:border-gray-700">
+                <h5 class="text-xl font-semibold" id="staticBackdropLabel">Título del Modal</h5>
+                <button type="button" class="text-gray-400 hover:text-gray-600" onclick="document.getElementById('staticBackdrop').style.display='none'">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <div class="mt-4" id="modal_id_body">...</div>
+            <div class="flex justify-end mt-6 space-x-4">
+                <button type="button" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md dark:text-gray-200 dark:bg-gray-600 hover:bg-gray-300" onclick="window.UI.modal_reset()">Cerrar</button>
+                <button type="button" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700" id="modal_bottom_ok">Entendido</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3D Model Viewer Modal -->
+     <div id="3d-modal" class="fixed inset-0 z-40 flex items-center justify-center bg-black bg-opacity-50" style="display: none;">
+        <div class="w-full max-w-3xl p-6 bg-white rounded-lg shadow-xl dark:bg-gray-800">
+            <div class="flex items-center justify-between pb-3 border-b border-gray-200 dark:border-gray-700">
+                <h5 class="text-xl font-semibold" id="3d-modal-label">Malla Facial 3D</h5>
+                <button type="button" class="text-gray-400 hover:text-gray-600" onclick="document.getElementById('3d-modal').style.display='none'">
+                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <div class="mt-4" id="3d-modal-container" style="height: 500px; width: 100%;"></div>
+        </div>
+    </div>
+
+    <!-- Hidden elements -->
+    <div id="liveAlertPlaceholder"></div>
+    <input type="file" id="file_input_img" class="hidden">
+    <audio id="sound_alert_1" src="../public/mp3/weeb-alert-182941.mp3"></audio>
+    <audio id="sound_alert_2" src="../public/mp3/siren-alert-96052.mp3"></audio>
+    <audio id="sound_alert_3" src="../public/mp3/alert-109578.mp3"></audio>
+    <audio id="sound_ok_1" src="../public/mp3/level-up-191997.mp3"></audio>
+    <audio id="sound_ok_2" src="../public/mp3/level-up-2-199574.mp3"></audio>
+
+    <!-- Scripts -->
+    <script src="http://localhost:8085/socket.io/socket.io.js"></script>
+    <script src="../public/jquery/jquery-3.7.1.min.js"></script>
+    <script src="../public/jquery/jquery.bootpag.min.js"></script>
+    <script src="../public/js/human.js"></script>
+    <script src="../public/js/form_logic.js"></script>
+    <script src="../public/js/loader.js"></script>
+    <script src="../public/js/3d-render.js"></script>
+    <script src="../public/js/three.min.js"></script>
+    <script src="../public/js/OrbitControls.js"></script>
+    <script src="../public/js/ui_components.js"></script>
+    <script src="../public/js/api.js"></script>
+
+    <!-- App Modules -->
+    <script src="../public/js/modules/user-actions.js" defer></script>
+    <script src="../public/js/modules/utils.js" defer></script>
+    <script src="../public/js/modules/auth.js" defer></script>
+    <script src="../public/js/modules/access-editor.js" defer></script>
+    <script src="../public/js/modules/access-report.js" defer></script>
+    <script src="../public/js/modules/user-management.js" defer></script>
+    <script src="../public/js/modules/camera-management.js" defer></script>
+    <script src="../public/js/modules/stats-reports.js" defer></script>
+    <script src="../public/js/modules/recognition.js" defer></script>
+    <script src="../public/js/dashboard_logic.js" defer></script>
+    <script src="../public/js/modules/menu-logic.js" defer></script>
+    <script src="../public/js/modules/router.js" defer></script>
+    <script src="../public/js/app_logic.js" defer></script>
+    <script src="../public/js/app.js" defer></script>
+</body>
+</html>

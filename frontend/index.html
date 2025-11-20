@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Vigilante - Iniciar Sesión</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class'
+        }
+    </script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900">
+    <div class="flex items-center justify-center min-h-screen">
+        <div class="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md dark:bg-gray-800">
+            <div class="flex justify-center">
+                <!-- <svg class="w-12 h-12 mx-auto text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                </svg>
+                <h1 class="mt-4 text-3xl font-extrabold text-gray-900 dark:text-white">
+                    Iniciar Sesión en Vigilante
+                </h1>
+                <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                    Seguro, simple e inteligente.
+                </p> -->
+                <img class="size-24 object-center" src="./public/img/ico_recognition.jpeg" />
+            </div>
+
+            <form class="space-y-6" onsubmit="event.preventDefault(); login();">
+                <div>
+                    <label for="email" class="text-sm font-medium text-gray-700 dark:text-gray-200">Correo Electrónico</label>
+                    <input type="email" id="email" placeholder="tu@ejemplo.com" required
+                           class="block w-full px-4 py-3 mt-2 text-gray-900 bg-white border border-gray-300 rounded-md dark:bg-gray-700 dark:text-white dark:border-gray-600 focus:border-blue-500 dark:focus:border-blue-500 focus:ring-blue-500 focus:outline-none focus:ring focus:ring-opacity-40">
+                </div>
+
+                <div>
+                    <label for="password" class="text-sm font-medium text-gray-700 dark:text-gray-200">Contraseña</label>
+                    <input type="password" id="password" placeholder="Tu Contraseña" required
+                           class="block w-full px-4 py-3 mt-2 text-gray-900 bg-white border border-gray-300 rounded-md dark:bg-gray-700 dark:text-white dark:border-gray-600 focus:border-blue-500 dark:focus:border-blue-500 focus:ring-blue-500 focus:outline-none focus:ring focus:ring-opacity-40">
+                </div>
+
+                <button type="submit"
+                        class="w-full px-4 py-3 text-sm font-medium tracking-wide text-white capitalize transition-colors duration-300 transform bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-50">
+                    Iniciar Sesión
+                </button>
+            </form>
+
+            <div class="flex items-center justify-between">
+                <span class="w-1/5 border-b dark:border-gray-600"></span>
+                <p class="text-xs text-center text-gray-500 uppercase dark:text-gray-400">o</p>
+                <span class="w-1/5 border-b dark:border-gray-600"></span>
+            </div>
+
+            <div class="flex items-center justify-center">
+                 <div id="g_id_onload"
+                    data-client_id="158581097943-8r8vdo3blub32klc7i4ve0uob5i9b7vh.apps.googleusercontent.com"
+                    data-callback="handleCredentialResponse"
+                    data-auto_prompt="false"
+                    data-ux_mode="popup">
+                </div>
+                <div class="g_id_signin"
+                    data-type="standard"
+                    data-theme="outline"
+                    data-size="large"
+                    data-text="sign_in_with"
+                    data-shape="rectangular"
+                    data-logo_alignment="left">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="./public/js/ui_components.js"></script>
+    <script>
+        function login() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const data = { email, password };
+
+            fetch('http://localhost:8085/vigilante/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(resp => resp.json())
+            .then(({ msg, token }) => {
+                if (msg !== 'ok') {
+                    return window.UI.showToast('Login fallido: ' + msg, 'error');
+                }
+                window.UI.showToast('Login exitoso! Redirigiendo...', 'success');
+                localStorage.setItem('token', token);
+                setTimeout(() => {
+                    window.location.href = './src/app.html';
+                }, 1000);
+            })
+            .catch(err => {
+                console.error(err);
+                window.UI.showToast('Ocurrió un error durante el login.', 'error');
+            });
+        }
+
+        function handleCredentialResponse(response) {
+            const data = { id_token: response.credential };
+            fetch('http://localhost:8085/vigilante/auth/google', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(resp => resp.json())
+            .then(({ msg, token }) => {
+                if (msg !== 'ok' && msg !== 'googleSignin OK') {
+                    return window.UI.showToast('Falló el inicio con Google: ' + msg, 'error');
+                }
+                window.UI.showToast('Inicio con Google exitoso! Redirigiendo...', 'success');
+                localStorage.setItem('token', token);
+                setTimeout(() => {
+                    window.location.href = './src/app.html';
+                }, 1000);
+            })
+            .catch(err => {
+                console.log(err);
+                window.UI.showToast('Ocurrió un error durante el inicio con Google.', 'error');
+            });
+        }
+    </script>
+</body>
+</html>
