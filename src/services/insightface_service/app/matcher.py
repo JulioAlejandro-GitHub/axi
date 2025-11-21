@@ -56,21 +56,43 @@ def get_known_faces_from_db():
         """
         cursor.execute(sql)
         rows = cursor.fetchall()
+        clean_faces = []
         
         for row in rows:
             try:
                 embedding_str = row['embedding']
                 if isinstance(embedding_str, (bytes, bytearray)):
                     embedding_str = embedding_str.decode('utf-8')
-                
-                embedding = json.loads(embedding_str)
 
-                known_faces.append({
-                    "usuario_id": row['usuario_id'],
-                    "nombre": row['nombre'],
-                    "usuario_tipo": row['usuario_tipo'],
-                    "embedding": np.array(embedding) # Convertir a array de numpy para cálculo
-                })
+
+                # Validación fuerte
+                if (
+                    isinstance(embedding_str, list)
+                    and len(embedding_str) == 512
+                    and all(isinstance(v, (int, float)) for v in embedding_str)
+                    and None not in embedding_str
+                ):
+                    known_faces.append({
+                        "usuario_id": row["usuario_id"],
+                        "usuario_tipo": row["tipo"],
+                        "nombre": row["nombre"],
+                        "embedding": np.array(embedding_str, dtype=np.float32)
+                    })
+
+                else:
+                    print(f"⚠️ Embedding inválido ignorado para usuario_id={row['usuario_id']}")
+
+
+
+                
+                # embedding = json.loads(embedding_str)
+
+                # known_faces.append({
+                #     "usuario_id": row['usuario_id'],
+                #     "nombre": row['nombre'],
+                #     "usuario_tipo": row['usuario_tipo'],
+                #     "embedding": np.array(embedding) # Convertir a array de numpy para cálculo
+                # })
             except (json.JSONDecodeError, TypeError) as e:
                 logging.warning(f"No se pudo decodificar el embedding para el usuario {row.get('usuario_id')}: {e}")
 
@@ -96,6 +118,20 @@ def find_best_match(input_embedding, known_faces, threshold=0.5):
     """
     Encuentra la mejor coincidencia para un embedding de entrada en una lista de rostros conocidos.
     """
+
+    # filtrar embeddings inválidos
+    clean_known_faces = []
+    for face in known_faces:
+        emb = face.get("embedding")
+        if emb is None:
+            continue
+        if isinstance(emb, list) and None in emb:
+            continue
+        clean_known_faces.append(face)
+
+    known_faces = clean_known_faces
+
+
     best_match_info = None
     highest_similarity = -1
 
