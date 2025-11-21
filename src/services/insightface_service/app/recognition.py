@@ -1,59 +1,104 @@
-# app/recognition.py
+# src/services/insightface_service/app/recognition.py
 
-import insightface
+import logging
 from insightface.app import FaceAnalysis
-from .matcher import match_embeddings
-from .database.usuario import DB_GetAllUsersEmbeddings
+from ..database.acceso import DB_InsertAcceso
+from datetime import datetime
+import cv2
+import numpy as np
+
+from .matcher import (
+    get_known_faces_from_db,
+    match_embeddings
+)
+
 
 
 class RecognitionService:
-    def __init__(self, db):
-        self.db = db
 
-        # inicializar el modelo de InsightFace
+    def __init__(self):
+        logging.info("[RecognitionService] Inicializando modelo InsightFace…")
         self.model = FaceAnalysis(name="buffalo_l")
-        self.model.prepare(ctx_id=0)
+        self.model.prepare(ctx_id=0, det_size=(640, 640))
 
-        # cache de embeddings
-        self.users = []
+        logging.info("[RecognitionService] Cargando embeddings desde la BD…")
+        self.known_faces = get_known_faces_from_db()
+        logging.info(f"[RecognitionService] {len(self.known_faces)} embeddings cargados.")
 
-    async def load_embeddings(self):
-        """
-        Leer todos los usuarios y sus embeddings desde la BD al iniciar.
-        """
-        print("🔵 Cargando embeddings desde base de datos…")
+    # ----------------------------------------------------------------------
+    #   PROCESO PRINCIPAL
+    # ----------------------------------------------------------------------
 
-        rows = await DB_GetAllUsersEmbeddings(self.db)
+    def recognize(self, image_bytes, camera_id=None):
 
-        self.users = [
-            {
-                "usuario_id": r["usuario_id"],
-                "nombre": r["nombre"],
-                "embedding": eval(r["embedding"])  # en tu BD está como texto
-            }
-            for r in rows
-        ]
+        # ---- DECODIFICAR IMAGEN ----
+        img_np = cv2.imdecode(np.frombuffer(image_bytes, np.uint8), cv2.IMREAD_COLOR)
 
-        print(f"🔵 {len(self.users)} embeddings cargados")
+        if img_np is None:
+            raise ValueError("No se pudo decodificar la imagen enviada")
 
-    def recognize(self, image_bytes):
-        """
-        Procesar imagen y encontrar a la persona más cercana.
-        """
-        faces = self.model.get(image_bytes)
-        if not faces:
-            return {"num_faces": 0, "match": None}
+        # ---- DETECTAR ROSTROS ----
+        faces = self.model.get(img_np)
 
-        face = faces[0]
-        emb = face.embedding.tolist()
+        personasIdentificadas = []
+        personasDesconocidas = []
+        matchFaces = []
 
-        match = match_embeddings(emb, self.users)
+        for i, face in enumerate(faces):
+            box = face.bbox.astype(int).tolist()
+            embedding = face.embedding
+
+            # Matching usando matcher.py
+            best_user, similarity = match_embeddings(
+                embedding,
+                self.known_faces,
+                threshold=0.38   # recomendado para buffalo_l
+            )
+
+            matchFaces.append({
+                "similarity": float(similarity),
+                "usuario_id": best_user["usuario_id"] if best_user else None,
+                "embedding": embedding.tolist(),
+                "box": box,
+                "fuente": ["insightface"]
+            })
+
+            if best_user:
+                personasIdentificadas.append({
+                    "similarity": float(similarity),
+                    "usuario_tipo": best_user["usuario_tipo"],
+                    "nombre": best_user["nombre"],
+                    "usuario_id": best_user["usuario_id"],
+                    "embedding": embedding.tolist(),
+                    "box": box,
+                    "img": None,
+                    "fuente": ["insightface"]
+                })
+
+                # Registrar acceso
+                DB_InsertAcceso(
+                    usuario_id=best_user["usuario_id"],
+                    camara_id=camera_id,
+                    similarity=round(float(similarity), 3),
+                    embedding=embedding.tolist()
+                )
+
+            else:
+                personasDesconocidas.append({
+                    "similarity": float(similarity),
+                    "usuario_tipo": "desconocido",
+                    "nombre": "nuevo Acceso",
+                    "usuario_id": f"desconocido_{i}",
+                    "embedding": embedding.tolist(),
+                    "box": box,
+                    "img": None,
+                    "fuente": ["insightface"]
+                })
+
         return {
-            "num_faces": 1,
-            "match": match,
-            "face_info": {
-                "bbox": face.bbox.tolist(),
-                "gender": face.gender,
-                "age": face.age
-            }
+            "personasDetectadas": len(faces),
+            "personasIdentificadas": personasIdentificadas,
+            "personasDesconocidas": personasDesconocidas,
+            "matchFaces": matchFaces,
+            "imgOriginal": None
         }

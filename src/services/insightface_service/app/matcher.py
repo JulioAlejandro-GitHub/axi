@@ -18,10 +18,10 @@ def get_database_connection():
     """Establece y devuelve una conexión a la base de datos."""
     try:
         connection = mysql.connector.connect(
-            host=os.getenv('DB_HOST'),
-            user=os.getenv('DB_USER'),
-            password=os.getenv('DB_PASSWORD'),
-            database=os.getenv('DB_NAME')
+            host=os.getenv('db_host'),
+            user=os.getenv('db_user'),
+            password=os.getenv('db_password'),
+            database=os.getenv('db_database')
         )
         if connection.is_connected():
             return connection
@@ -121,3 +121,9 @@ def find_best_match(input_embedding, known_faces, threshold=0.5):
     
     return None, highest_similarity
 
+def match_embeddings(input_embedding, known_faces, threshold=0.5):
+    """
+    Alias de compatibilidad para find_best_match().
+    Se mantiene para hacer funcionar el servicio que importa match_embeddings.
+    """
+    return find_best_match(input_embedding, known_faces, threshold)

@@ -26,10 +26,10 @@ def get_database_connection():
     """Establece y devuelve una conexión a la base de datos."""
     try:
         connection = mysql.connector.connect(
-            host=os.getenv('DB_HOST'),
-            user=os.getenv('DB_USER'),
-            password=os.getenv('DB_PASSWORD'),
-            database=os.getenv('DB_NAME')
+            host=os.getenv('db_host'),
+            user=os.getenv('db_user'),
+            password=os.getenv('db_password'),
+            database=os.getenv('db_database')
         )
         if connection.is_connected():
             logging.info("Conexión a la base de datos establecida con éxito.")
