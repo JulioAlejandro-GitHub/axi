@@ -1,12 +1,9 @@
-# camera_stream/stream_worker.py
-import asyncio
-import ffmpeg
+# insightface_service/camera_stream/stream_worker.py
+import time
 import logging
+import ffmpeg
 from detector import Detector
 from sender import Sender
-from io import BytesIO
-import time
-
 
 class StreamWorker:
     def __init__(self, camera, cfg):
@@ -18,48 +15,37 @@ class StreamWorker:
         self.reconnect_delay = cfg['camera'].get('reconnect_delay', 3)
         self.read_size = cfg['camera'].get('rtsp_read_size', 4096)
 
-
-    async def start(self):
+    def run(self):
+        """Entrypoint para Thread: mantiene reconexiones automáticas."""
         self.running = True
-        loop = asyncio.get_event_loop()
-        await loop.run_in_executor(None, self._main_loop)
-
-
-    def _main_loop(self):
-        """Mantiene reconexiones automáticas."""
         while self.running:
             try:
                 self._run_ffmpeg()
             except Exception as e:
-                logging.exception("StreamWorker fallo permanente: %s", e)
+                logging.exception("StreamWorker fallo: %s", e)
 
             if not self.running:
                 break
 
-            logging.warning(f"Reintentando conexión a {self.camera['camara_nombre']} en {self.reconnect_delay}s...")
+            logging.warning(f"Reintentando conexión a camera {self.camera.get('nombre')} en {self.reconnect_delay}s...")
             time.sleep(self.reconnect_delay)
-
 
     def _run_ffmpeg(self):
         """Procesa el streaming de RTSP → JPEG frames."""
         rtsp = (
-            f"rtsp://{self.camera['camara_user']}:{self.camera['camara_pass']}"
-            f"@{self.camera['camara_hostname']}:{self.camera['camara_port']}/cam/realmonitor?channel=1&subtype=0"
+            f"rtsp://{self.camera.get('camara_user')}:{self.camera.get('camara_pass')}"
+            f"@{self.camera.get('camara_hostname')}:{self.camera.get('camara_port')}/cam/realmonitor?channel=1&subtype=0"
         )
 
         input_kwargs = {
-            'rtsp_transport': self.cfg['camera']['rtsp_transport'],
-            'stimeout': '5000000'   # 5s timeout → evita freeze
+            'rtsp_transport': self.cfg['camera'].get('rtsp_transport', 'tcp'),
+            'stimeout': str(int(self.cfg['camera'].get('ffmpeg_stimeout_ms', 5000000)))  # microsegundos para ffmpeg
         }
 
         process = (
             ffmpeg
             .input(rtsp, **input_kwargs)
-            .output(
-                'pipe:',
-                format='image2pipe',
-                vcodec='mjpeg'
-            )
+            .output('pipe:', format='image2pipe', vcodec='mjpeg')
             .run_async(pipe_stdout=True, pipe_stderr=True)
         )
 
@@ -71,6 +57,7 @@ class StreamWorker:
             while self.running:
                 chunk = process.stdout.read(self.read_size)
                 if not chunk:
+                    logging.debug("No chunk received, breaking read loop")
                     break
 
                 buffer += chunk
@@ -88,40 +75,34 @@ class StreamWorker:
                     frame = buffer[soi:eoi+2]
                     buffer = buffer[eoi+2:]
 
-                    # detección (ejecutar rápido!)
-                    persons = self.detector.detect_persons(frame)
+                    # detección (rápida)
+                    try:
+                        persons = self.detector.detect_persons(frame)
+                    except Exception as e:
+                        logging.exception("Detector error: %s", e)
+                        persons = []
 
                     if persons:
-                        # Chile: persona dentro del cuadro
-                        # Mandamos frame con detection inmediata
-                        # self.sender.send_frame(frame, self.camera, force=True)
-
+                        # Si hay detecciones, forzamos envío inmediato (nuevo evento)
                         try:
                             self.sender.send_frame(frame, self.camera, force=True)
-                        except Exception as e:
-                            logging.error("Error enviando frame: %s", e)
+                        except Exception:
+                            logging.exception("Error enviando frame detectado")
                     else:
-                        # No hay nuevos rostros pero sí actividad
-                        # Se envía según el cooldown batch
-                        # self.sender.send_frame(frame, self.camera, force=False)
+                        # no se detectó persona → enviar acorde al batch/cooldown
                         try:
                             self.sender.send_frame(frame, self.camera, force=False)
-                        except Exception as e:
-                            logging.error("Error enviando frame: %s", e)
-
-
-                    # if persons:
-                    #     try:
-                    #         self.sender.send_frame(frame, self.camera)
-                    #     except Exception as e:
-                    #         logging.error("Error enviando frame: %s", e)
+                        except Exception:
+                            logging.exception("Error enviando frame en batch")
 
         except Exception as e:
             logging.exception("Error en lectura RTSP: %s", e)
 
         finally:
-            process.terminate()
+            try:
+                process.terminate()
+            except Exception:
+                pass
 
-
-    async def stop(self):
+    def stop(self):
         self.running = False
