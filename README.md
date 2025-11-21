@@ -80,3 +80,30 @@ colima start --arch aarch64 --memory 8 --cpu 6
 
 docker compose up -d
 -->
+
+
+
+🧪 Crear entorno virtual del servicio InsightFace:
+cd insightface_service
+python3 -m venv venv_insight
+source venv_insight/bin/activate
+pip install -r requirements.txt
+
+▶️ run.sh del servicio InsightFace:
+#!/bin/bash
+cd "$(dirname "$0")"
+source venv_insight/bin/activate
+python3 main.py
+
+
+🧪 Crear entorno virtual: cam_streaming
+cd cam_streaming
+python3 -m venv venv_stream
+source venv_stream/bin/activate
+pip install -r requirements.txt
+
+▶️ run.sh del servicio de streaming:
+#!/bin/bash
+cd "$(dirname "$0")"
+source venv_stream/bin/activate
+python3 camera_stream/main.py

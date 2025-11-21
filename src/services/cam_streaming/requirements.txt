@@ -1,0 +1,10 @@
+ultralytics
+opencv-python
+onnxruntime
+numpy
+requests
+ffmpeg-python
+pillow
+aiomysql
+fastapi
+uvicorn

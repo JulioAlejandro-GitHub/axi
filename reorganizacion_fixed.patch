@@ -1,0 +1,111 @@
+diff --git a/insightface_service/main.py b/insightface_service/app/main.py
+similarity index 100%
+rename from insightface_service/main.py
+rename to insightface_service/app/main.py
+
+diff --git a/insightface_service/database b/insightface_service/app/database
+similarity index 100%
+rename from insightface_service/database
+rename to insightface_service/app/database
+
+diff --git a/insightface_service/requirements.txt b/insightface_service/requirements.txt
+deleted file mode 100644
+
+diff --git a/insightface_service/venv b/insightface_service/venv_insight
+similarity index 100%
+rename from insightface_service/venv
+rename to insightface_service/venv_insight
+
+diff --git a/insightface_service/run.sh b/insightface_service/run.sh
+new file mode 100755
+index 0000000..ab12cd3
+--- /dev/null
++++ b/insightface_service/run.sh
+@@ -0,0 +1,8 @@
++#!/bin/bash
++cd "$(dirname "$0")"
++if [ ! -d "venv_insight" ]; then
++    echo "Error: venv_insight no existe. Ejecuta setup.sh primero."
++    exit 1
++fi
++source venv_insight/bin/activate
++python3 app/main.py
+
+diff --git a/insightface_service/setup.sh b/insightface_service/setup.sh
+new file mode 100755
+--- /dev/null
++++ b/insightface_service/setup.sh
+@@ -0,0 +1,10 @@
++#!/bin/bash
++cd "$(dirname "$0")"
++python3 -m venv venv_insight
++source venv_insight/bin/activate
++pip install --upgrade pip
++pip install -r requirements.txt
++echo "Entorno insightface_service listo."
+
+diff --git a/insightface_service/camera_stream b/cam_streaming/camera_stream
+similarity index 100%
+rename from insightface_service/camera_stream
+rename to cam_streaming/camera_stream
+
+diff --git a/cam_streaming/main.py b/cam_streaming/main.py
+new file mode 100644
+--- /dev/null
++++ b/cam_streaming/main.py
+@@ -0,0 +1,20 @@
++from camera_stream.camera_manager import CameraManager
++from camera_stream.config import load_config
++
++def main():
++    cfg = load_config()
++    manager = CameraManager(cfg)
++    manager.start()
++
++if __name__ == '__main__':
++    main()
+
+diff --git a/cam_streaming/run.sh b/cam_streaming/run.sh
+new file mode 100755
+--- /dev/null
++++ b/cam_streaming/run.sh
+@@ -0,0 +1,8 @@
++#!/bin/bash
++cd "$(dirname "$0")"
++if [ ! -d "venv_stream" ]; then
++    echo "No existe entorno venv_stream. Ejecuta setup.sh primero."
++    exit 1
++fi
++source venv_stream/bin/activate
++python3 main.py
+
+diff --git a/cam_streaming/setup.sh b/cam_streaming/setup.sh
+new file mode 100755
+--- /dev/null
++++ b/cam_streaming/setup.sh
+@@ -0,0 +1,10 @@
++#!/bin/bash
++cd "$(dirname "$0")"
++python3 -m venv venv_stream
++source venv_stream/bin/activate
++pip install --upgrade pip
++pip install -r requirements.txt
++echo "Entorno cam_streaming listo."
+
+diff --git a/run_all.sh b/run_all.sh
+new file mode 100755
+--- /dev/null
++++ b/run_all.sh
+@@ -0,0 +1,15 @@
++#!/bin/bash
++BASE_DIR="$(dirname "$0")"
++
++echo "🚀 Iniciando InsightFace Service..."
++bash "$BASE_DIR/insightface_service/run.sh" &
++
++echo "📡 Iniciando Camera Streaming Service..."
++bash "$BASE_DIR/cam_streaming/run.sh" &
++
++echo "🔥 Ambos servicios iniciados"
++
++wait

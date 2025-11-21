@@ -77,8 +77,8 @@ temp/
 *.swp
 
 # Entorno Virtual Python
-insightface_service/venv/
-
+src/services/insightface_service/venv_insight/
+src/services/cam_streaming/venv_stream/
 
 *.m3u8
 

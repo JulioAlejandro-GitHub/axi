@@ -1,0 +1,34 @@
+camera:
+  refresh_interval: 30000        # ms entre refrescos (si usas DB, puedes ignorar cameras.yml)
+  rtsp_transport: tcp
+  rtsp_read_size: 4096
+  reconnect_delay: 3
+  ffmpeg_stimeout_ms: 5000000    # 5s en microsegundos
+
+detector:
+  yolo_model: "yolov8n.pt"
+  min_person_confidence: 0.35
+  enable_insightface: false      # true si quieres usar embeddings en Python
+  insight_model: "buffalo_l"
+  insight_ctx: -1                # -1 CPU, 0 GPU
+  insight_det_size: [320, 320]
+
+backend:
+  recognition_url: "http://localhost:8010/recognize"
+  timeout: 5
+  cooldown_ms: 500
+  max_retries: 3
+
+database:
+  host: "localhost"
+  port: 3306
+  user: "root"
+  password: "rootroot"
+  database: "Vigilante"
+
+logging:
+  file: "camera_stream.log"
+  level: "INFO"
+
+# opcional si usas cameras.yml en vez de BD
+camera_file: "cameras.yml"
