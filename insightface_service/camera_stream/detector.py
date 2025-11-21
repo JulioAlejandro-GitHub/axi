@@ -37,31 +37,17 @@ class Detector:
 
     def detect_persons(self, jpeg_bytes):
         img = self._jpeg_to_np(jpeg_bytes)
-
-        # YOLOv8 inference
-        results = self.model(img, verbose=False)
+        results = self.model(img)
 
         persons = []
         for r in results:
-            boxes = getattr(r.boxes, "xyxy", [])
-            classes = getattr(r.boxes, "cls", [])
-            confs = getattr(r.boxes, "conf", [])
-            names = r.names
-
-            for box, cls, conf in zip(boxes, classes, confs):
-                try:
-                    cls_idx = int(cls)
-                except Exception:
-                    cls_idx = int(float(cls))
-                name = names[cls_idx]
-                if name == "person" and float(conf) >= self.min_conf:
-                    # asegurarse que box esté en formato lista de ints
-                    coords = [int(float(x)) for x in box]
+            for box, cls, conf in zip(r.boxes.xyxy, r.boxes.cls, r.boxes.conf):
+                name = r.names[int(cls)]
+                if name == "person" and conf >= self.min_conf:
                     persons.append({
-                        "box": coords,
+                        "box": box.tolist(),
                         "conf": float(conf)
                     })
-
         return persons
 
     def get_face_embedding(self, jpeg_bytes, box):
