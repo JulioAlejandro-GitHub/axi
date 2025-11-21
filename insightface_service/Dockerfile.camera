@@ -2,6 +2,6 @@ FROM python:3.10-slim
 WORKDIR /app
 COPY . /app
 RUN apt-get update && apt-get install -y ffmpeg \
-&& pip install --upgrade pip \
-&& pip install -r camera_stream/requirements.txt
+    && pip install --upgrade pip \
+    install -r camera_stream/requirements.txt
 CMD ["python", "-m", "camera_stream.main"]

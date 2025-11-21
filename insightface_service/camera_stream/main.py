@@ -5,10 +5,10 @@ from config import load_config
 
 
 async def main():
-cfg = load_config()
-manager = CameraManager(cfg)
-await manager.start()
+    cfg = load_config()
+    manager = CameraManager(cfg)
+    await manager.start()
 
 
 if __name__ == '__main__':
-asyncio.run(main())
+    asyncio.run(main())
