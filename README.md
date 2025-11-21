@@ -107,3 +107,42 @@ pip install -r requirements.txt
 cd "$(dirname "$0")"
 source venv_stream/bin/activate
 python3 camera_stream/main.py
+
+
+
+
+
+
+Crear el venv Python
+
+Ve al directorio correcto:
+cd /Users/julio/Documents/GitHub/axi/src/services/insightface_service
+
+Crear venv:
+python3 -m venv venv_insight
+
+Activarlo:
+source venv_insight/bin/activate
+
+Confirmar:
+which python
+
+
+
+
+Instalar dependencias del InsightFace Service
+pip install --upgrade pip
+pip install -r requirements.txt
+
+
+Borrar caché del proyecto (importante)
+find . -type d -name "__pycache__" -exec rm -r {} +
+
+
+
+Ejecutar InsightFace Service
+python -m app.main
+
+
+Dale permiso:
+chmod +x run.sh

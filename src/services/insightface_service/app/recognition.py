@@ -1,39 +1,59 @@
-import numpy as np
+# app/recognition.py
+
+import insightface
 from insightface.app import FaceAnalysis
-from PIL import Image
-import io
+from .matcher import match_embeddings
+from .database.usuario import DB_GetAllUsersEmbeddings
 
 
 class RecognitionService:
-    def __init__(self):
-        # Cargar FaceAnalysis completo (detección + landmarks + embedding)
-        self.app = FaceAnalysis(name="buffalo_l")
-        self.app.prepare(ctx_id=0, det_size=(640, 640))
+    def __init__(self, db):
+        self.db = db
 
-    def _bytes_to_rgb(self, img_bytes):
-        return np.array(Image.open(io.BytesIO(img_bytes)).convert("RGB"))
+        # inicializar el modelo de InsightFace
+        self.model = FaceAnalysis(name="buffalo_l")
+        self.model.prepare(ctx_id=0)
 
-    def process(self, image_bytes):
+        # cache de embeddings
+        self.users = []
+
+    async def load_embeddings(self):
         """
-        Procesa una imagen y devuelve detecciones y embeddings con InsightFace.
+        Leer todos los usuarios y sus embeddings desde la BD al iniciar.
         """
-        img = self._bytes_to_rgb(image_bytes)
+        print("🔵 Cargando embeddings desde base de datos…")
 
-        faces = self.app.get(img)
+        rows = await DB_GetAllUsersEmbeddings(self.db)
 
-        result = {
-            "num_faces": len(faces),
-            "faces": []
-        }
-
-        for f in faces:
-            face_info = {
-                "bbox": f.bbox.astype(int).tolist(),
-                "kps": f.kps.tolist(),
-                "embedding": f.embedding.tolist(),   # embedding válido
-                "gender": int(f.gender),
-                "age": int(f.age)
+        self.users = [
+            {
+                "usuario_id": r["usuario_id"],
+                "nombre": r["nombre"],
+                "embedding": eval(r["embedding"])  # en tu BD está como texto
             }
-            result["faces"].append(face_info)
+            for r in rows
+        ]
 
-        return result
+        print(f"🔵 {len(self.users)} embeddings cargados")
+
+    def recognize(self, image_bytes):
+        """
+        Procesar imagen y encontrar a la persona más cercana.
+        """
+        faces = self.model.get(image_bytes)
+        if not faces:
+            return {"num_faces": 0, "match": None}
+
+        face = faces[0]
+        emb = face.embedding.tolist()
+
+        match = match_embeddings(emb, self.users)
+        return {
+            "num_faces": 1,
+            "match": match,
+            "face_info": {
+                "bbox": face.bbox.tolist(),
+                "gender": face.gender,
+                "age": face.age
+            }
+        }
