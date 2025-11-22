@@ -95,17 +95,18 @@ class StreamWorker:
                 # Modo batch:
                 # - Si hay personas → envío inmediato
                 # - Si no hay personas → respetar intervalo mínimo entre frames
-                if not force:
-                    # si no ha pasado suficiente tiempo desde el último envío batch, saltar este frame
-                    if now - self.last_batch_sent_ts < self.batch_interval:
-                        continue
+                # if not force:
+                #     # si no ha pasado suficiente tiempo desde el último envío batch, saltar este frame
+                #     if now - self.last_batch_sent_ts < self.batch_interval:
+                #         continue
 
-                try:
-                    self.sender.send_frame(jpeg_bytes, self.camera, force=force)
-                    if force or (now - self.last_batch_sent_ts >= self.batch_interval):
-                        self.last_batch_sent_ts = now
-                except Exception as e:
-                    logging.exception("[StreamWorker] Error enviando frame: %s", e)
+                if force:
+                    try:
+                        self.sender.send_frame(jpeg_bytes, self.camera, force=force)
+                        if force or (now - self.last_batch_sent_ts >= self.batch_interval):
+                            self.last_batch_sent_ts = now
+                    except Exception as e:
+                        logging.exception("[StreamWorker] Error enviando frame: %s", e)
 
             cap.release()
             logging.info("[RTSP-OPENCV] Cerrando VideoCapture, reintentando en %ss...", self.reconnect_delay)

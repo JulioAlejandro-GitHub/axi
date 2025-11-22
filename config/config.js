@@ -10,6 +10,7 @@ module.exports = {
         usuario: '/vigilante/usuario',
         recognition: '/vigilante/recognition',
         statistics: '/vigilante/statistics',
+        streaming: '/vigilante/streaming',
         test: '/vigilante/test',
     },
     database: {

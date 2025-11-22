@@ -118,7 +118,8 @@ class Server {
 
                 if (routePath) {
                     // Apply JWT middleware to protected routes
-                    if (['usuario', 'recognition'].includes(routeName)) {
+                    // if (['usuario', 'recognition'].includes(routeName)) {
+                    if (['usuario', 'recognition', 'streaming'].includes(routeName)) {
                         this.app.use(routePath, validarJWT, routeModule);
                     } else {
                         this.app.use(routePath, routeModule);

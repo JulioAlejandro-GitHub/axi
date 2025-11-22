@@ -145,13 +145,20 @@ class CameraService {
     }
 
     startHlsStreamForCamera(camera) {
-        // If a stream for this camera is already running, do nothing.
+        const outputDir = path.join(process.cwd(), 'public', 'streams', `cam_${camera.camara_id}`);
+
+        // If a stream for this camera is already running, reuse the existing output directory.
         if (this.activeHlsStreams.has(camera.camara_id)) {
             logger.info(`[HLS] Stream for camera ${camera.camara_id} is already active.`);
-            return;
+            // Ensure the directory still exists in case it was removed externally.
+            if (!fs.existsSync(outputDir)) {
+                fs.mkdirSync(outputDir, { recursive: true });
+                logger.info(`[HLS] Recreated missing directory: ${outputDir}`);
+            }
+            return { outputDir };
         }
 
-        const { command, outputDir } = startHlsStream(camera);
+        const { command } = startHlsStream(camera);
 
         command
             .on('start', (commandLine) => {
@@ -183,7 +190,8 @@ class CameraService {
             });
 
         command.run();
-        this.activeHlsStreams.set(camera.camara_id, { command, intentionallyStopped: false });
+        this.activeHlsStreams.set(camera.camara_id, { command, intentionallyStopped: false, outputDir });
+        return { outputDir };
     }
 
     stop() {

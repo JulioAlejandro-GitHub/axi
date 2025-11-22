@@ -21,7 +21,8 @@ const logger = require('./logger');
 function startHlsStream(camera) {
     const rtspUrl = `rtsp://${encodeURIComponent(camera.camara_user)}:${encodeURIComponent(camera.camara_pass)}@${camera.camara_hostname}:${camera.camara_port}/cam/realmonitor?channel=1&subtype=0`;
     const streamId = `cam_${camera.camara_id}`;
-    const outputDir = path.join(__dirname, '../public/streams', streamId);
+    // const outputDir = path.join(__dirname, '../public/streams', streamId);
+    const outputDir = path.join(process.cwd(), 'public', 'streams', streamId);
 
     // Create the directory for the HLS stream files if it doesn't exist.
     if (!fs.existsSync(outputDir)) {

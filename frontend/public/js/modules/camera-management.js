@@ -102,41 +102,39 @@
                                     <input type="text" id="edit-${key.toLowerCase()}" value="${data[key]}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-700 dark:border-gray-600 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
                                 </div>`;
                     }).join('')}
-                </form>`;
-
+                </form>
+            `;
             window.UI.updateModalBody(bodyHtml);
+
         } catch (error) {
-             window.UI.updateModalBody(`<p class="text-red-500">Error al cargar la configuración: ${error.message}</p>`);
+            window.UI.showToast(`Error al cargar la configuración de la cámara: ${error.message}`, 'error');
         }
     }
 
     async function saveCamara(camaraId) {
-        const data = {
-            camara_id: camaraId,
-            nombre: document.getElementById('edit-nombre').value,
-            ubicacion: document.getElementById('edit-ubicacion').value,
-            estado: document.getElementById('edit-estado').value,
-            protocolo: document.getElementById('edit-protocolo').value,
-        };
-        window.UI.loadingSpinner.show();
+        const form = document.getElementById('editCamaraForm');
+        const formData = new FormData(form);
+        const data = {};
+
+        formData.forEach((value, key) => {
+            data[key] = value;
+        });
+
         try {
-            await window.VigilanteAPI.updateCamara(data);
-            window.UI.showToast('Cámara actualizada correctamente.', 'success');
-            window.UI.hideModal();
+            await window.VigilanteAPI.updateCamara(camaraId, data);
+            window.UI.showToast('Cámara actualizada correctamente', 'success');
+            window.UI.closeModal();
             fGetCamaras();
         } catch (error) {
             window.UI.showToast(`Error al actualizar la cámara: ${error.message}`, 'error');
-        } finally {
-            window.UI.loadingSpinner.hide();
         }
     }
 
     async function fGetLiveStream(pagina = 1, filters = {}) {
         const contentBody = document.getElementById('fullbody');
-
         const filterHtml = `
-            <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md mb-6">
-                <h5 class="text-lg font-semibold mb-4">Filtrar Cámaras</h5>
+            <div class="mb-6 bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
+                <h2 class="text-lg font-semibold mb-4">Filtros</h2>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                         <label for="livestream-filter-ubicacion" class="block text-sm font-medium text-gray-700 dark:text-gray-200">Ubicación</label>
@@ -260,12 +258,21 @@
         const videoEl = document.getElementById(`video-stream-${camara_id}`);
         if (!videoEl) return;
         window.UI.loadingSpinner.show();
+        let hlsUrl;
         try {
             const resp = await window.VigilanteAPI.startStream(camara_id);
-            // fallback: construir URL si el backend no la envía
-            const hlsUrl = resp?.hlsUrl || `/public/uploads/straming/cam_${camara_id}/index.m3u8`;
-            const fullUrl = hlsUrl.startsWith('http') ? hlsUrl : (window.VigilanteAPI.baseUrl + hlsUrl);
+            hlsUrl = resp?.hlsUrl;
+        } catch (err) {
+            console.warn(`Fallo al solicitar inicio de stream para la cámara ${camara_id}:`, err);
+        } finally {
+            window.UI.loadingSpinner.hide();
+        }
 
+        // fallback: construir URL si el backend no la envía o si la llamada falló
+        const finalHlsUrl = hlsUrl || `/public/streams/cam_${camara_id}/stream.m3u8`;
+        const fullUrl = finalHlsUrl.startsWith('http') ? finalHlsUrl : (window.VigilanteAPI.baseUrl + finalHlsUrl);
+
+        try {
             if (Hls.isSupported()) {
                 const hls = new Hls();
                 hls.loadSource(fullUrl);
@@ -277,8 +284,6 @@
             }
         } catch (err) {
             window.UI.showToast(`No se pudo iniciar el stream: ${err.message}`, 'error');
-        } finally {
-            window.UI.loadingSpinner.hide();
         }
     }
 
