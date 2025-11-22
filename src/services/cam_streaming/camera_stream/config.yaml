@@ -18,6 +18,7 @@ backend:
   timeout: 5
   cooldown_ms: 500
   max_retries: 3
+  batch_interval_ms: 15000
 
 database:
   host: "localhost"

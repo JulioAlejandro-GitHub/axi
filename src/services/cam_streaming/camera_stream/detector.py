@@ -9,7 +9,7 @@ import logging
 class Detector:
     def __init__(self, cfg):
         self.cfg = cfg
-        self.model = YOLO(cfg.get('yolo_model', 'yolov8n.pt'))
+        self.model = YOLO(cfg.get('yolo_model', 'yolov8n.pt'), verbose=False)
         self.min_conf = cfg.get('min_person_confidence', 0.35)
 
         # InsightFace carga opcional y solo una vez
@@ -37,7 +37,7 @@ class Detector:
 
     def detect_persons(self, jpeg_bytes):
         img = self._jpeg_to_np(jpeg_bytes)
-        results = self.model(img)
+        results = self.model(img, verbose=False)
 
         persons = []
         for r in results:
