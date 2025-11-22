@@ -1,29 +1,53 @@
 # insightface_service/database/usuario.py
 import json
-from .db import Database
+import os
+import uuid
+from sqlalchemy import select, insert
+from .db import get_db_connection
+from src.services.database.models import usuario
 
 class UsuarioDB:
-    def __init__(self, db: Database):
-        self.db = db
-
     def get_all_embeddings(self, local_id=None):
-        sql = """
-        SELECT usuario_id, nombre, tipo, local_id, embedding
-        FROM usuario
-        WHERE estado = 'activo'
-          AND embedding IS NOT NULL
-        """
-        params = []
+        query = select(
+            usuario.c.usuario_id,
+            usuario.c.nombre,
+            usuario.c.tipo,
+            usuario.c.local_id,
+            usuario.c.embedding
+        ).where(
+            usuario.c.estado == 'activo',
+            usuario.c.embedding.isnot(None)
+        )
 
         if local_id:
-            sql += " AND local_id = %s"
-            params.append(local_id)
+            query = query.where(usuario.c.local_id == local_id)
 
-        rows = self.db.query(sql, params)
+        with get_db_connection() as conn:
+            result = conn.execute(query).fetchall()
 
         # convertir JSON → vector float32
-        for r in rows:
-            if r["embedding"]:
-                r["embedding"] = json.loads(r["embedding"])
+        for r in result:
+            if r.embedding:
+                r.embedding = json.loads(r.embedding)
 
-        return rows
+        return result
+
+    def crear_usuario_desconocido(self):
+        """
+        Inserta un usuario desconocido y devuelve su ID.
+        """
+        default_local_id = os.getenv("DEFAULT_UNKNOWN_USER_LOCAL_ID", 1)
+
+        query = insert(usuario).values(
+            nombre="Desconocido",
+            tipo="desconocido",
+            estado="activo",
+            # TODO: Se debe implementar un método seguro para la generación de contraseñas.
+            password_bcryptjs="1",
+            local_id=default_local_id,
+            google="0",
+            email=f"unknown_{uuid.uuid4()}@example.com"
+        )
+        with get_db_connection() as conn:
+            result = conn.execute(query)
+            return result.inserted_primary_key[0]
