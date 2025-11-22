@@ -22,7 +22,7 @@ module.exports = {
         secret: process.env.SECRETORPRIVATEKEY,
     },
     recognition: {
-        service: process.env.RECOGNITION_SERVICE || 'human', // 'human' or 'compreface'
+        service: process.env.RECOGNITION_SERVICE, // 'human' or 'compreface'
         compreface: {
             url: process.env.COMPREFACE_URL,
             apiKey: process.env.COMPREFACE_API_KEY,
@@ -32,7 +32,7 @@ module.exports = {
             matchThreshold: parseFloat(process.env.HUMAN_MATCH_THRESHOLD) || 0.7,
         },
         insightface: {
-            url: process.env.INSIGHTFACE_SERVICE_URL || 'http://localhost:5001/recognize'
+            url: process.env.INSIGHTFACE_SERVICE_URL
         },
     },
     camera: {

@@ -216,6 +216,11 @@
          * @param {object} [data={}] - An object containing pagina, ubicacion, estado, and protocolo.
          */
         getLiveStreamSources: (data = {}) => fetchApi(`${baseUrl}/vigilante/usuario/livestream`, 'POST', data),
+        /**
+         * Solicita iniciar un stream HLS on-demand para una cámara.
+         * Respuesta esperada: { hlsUrl: '/public/uploads/straming/cam_<id>/index.m3u8' }
+         */
+        startStream: (camara_id) => fetchApi(`${baseUrl}/vigilante/streaming/start`, 'POST', { camara_id }),
 
 
 

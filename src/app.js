@@ -10,8 +10,6 @@ const config = require('../config/config');
 const cameraService = require('./services/camera/camera-service');
 const logger = require('./helpers/logger');
 
-// const server = new Server();
-
 // Instantiate shared services
 const humanMatcher = new HumanMatcherService(config);
 
@@ -26,9 +24,9 @@ async function main() {
         logger.info('--- [APP] listen() called, proceeding... ---');
 
         // Start the camera service in the background
-        logger.info('--- [APP] Starting camera service ---');
-        await cameraService.start();
-        logger.info('--- [APP] Camera service started ---');
+        // logger.info('--- [APP] Starting camera service ---');
+        // await cameraService.start();
+        // logger.info('--- [APP] Camera service started ---');
 
     } catch (error) {
         logger.error('---! CRITICAL STARTUP ERROR !---', error);

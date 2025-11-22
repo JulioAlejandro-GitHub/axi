@@ -1,11 +1,13 @@
 # insightface_service/app/matcher.py
 
-import os
-import mysql.connector
-from dotenv import load_dotenv
 import json
 import logging
+import os
+
 import numpy as np
+from dotenv import load_dotenv
+
+from ..database.db import get_db
 
 # Configuración básica de logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -14,38 +16,19 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 dotenv_path = os.path.join(os.path.dirname(__file__), '..', '..', '.env')
 load_dotenv(dotenv_path=dotenv_path)
 
-def get_database_connection():
-    """Establece y devuelve una conexión a la base de datos."""
-    try:
-        connection = mysql.connector.connect(
-            host=os.getenv('db_host'),
-            user=os.getenv('db_user'),
-            password=os.getenv('db_password'),
-            database=os.getenv('db_database')
-        )
-        if connection.is_connected():
-            return connection
-    except mysql.connector.Error as e:
-        logging.error(f"Error al conectar a la base de datos: {e}")
-        return None
-
 def get_known_faces_from_db():
     """
     Obtiene los embeddings y datos de los usuarios registrados desde la base de datos.
     """
-    connection = get_database_connection()
-    if not connection:
-        return []
-
+    db = get_db()
     known_faces = []
     try:
-        cursor = connection.cursor(dictionary=True)
         sql = """
             SELECT
                 a.usuario_id,
                 a.embedding,
                 u.nombre,
-                u.tipo AS usuario_tipo
+                u.tipo AS tipo
             FROM acceso a
             INNER JOIN usuario u ON u.usuario_id = a.usuario_id
             WHERE
@@ -54,8 +37,7 @@ def get_known_faces_from_db():
                 AND a.fecha_eliminacion IS NULL
                 AND a.embedding IS NOT NULL
         """
-        cursor.execute(sql)
-        rows = cursor.fetchall()
+        rows = db.query(sql)
         clean_faces = []
         
         for row in rows:
@@ -98,13 +80,9 @@ def get_known_faces_from_db():
 
         logging.info(f"Se cargaron {len(known_faces)} rostros conocidos desde la base de datos.")
         return known_faces
-    except mysql.connector.Error as e:
+    except Exception as e:
         logging.error(f"Error al ejecutar la consulta SQL: {e}")
         return []
-    finally:
-        if connection and connection.is_connected():
-            cursor.close()
-            connection.close()
 
 def cosine_similarity(embedding1, embedding2):
     """Calcula la similitud del coseno entre dos embeddings de numpy."""

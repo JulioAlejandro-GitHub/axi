@@ -594,14 +594,14 @@ const getLiveStream = async (req, res = response) => {
         logger.info(`Found ${cameras.length} cameras in DB. Starting ONVIF validation for live stream.`);
         const validatedWebcams = await validateCameras(cameras);
 
-        // Start HLS stream for compatible cameras
-        validatedWebcams.forEach(camera => {
-            if (camera.isCompatible && camera.protocolo === 'onvif') {
-                logger.info(`[HLS] Initiating stream for compatible camera ID: ${camera.camara_id}`);
-                cameraService.startHlsStreamForCamera(camera);
-                camera.hlsStreamUrl = `/public/streams/cam_${camera.camara_id}/stream.m3u8`;
-            }
-        });
+        // // Start HLS stream for compatible cameras
+        // validatedWebcams.forEach(camera => {
+        //     if (camera.isCompatible && camera.protocolo === 'onvif') {
+        //         logger.info(`[HLS] Initiating stream for compatible camera ID: ${camera.camara_id}`);
+        //         cameraService.startHlsStreamForCamera(camera);
+        //         camera.hlsStreamUrl = `/public/streams/cam_${camera.camara_id}/stream.m3u8`;
+        //     }
+        // });
 
         const totalPages = Math.ceil(total / tamano_pagina);
 

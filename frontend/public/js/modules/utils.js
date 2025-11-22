@@ -7,8 +7,15 @@
         const paginator = document.getElementById(elementId);
         if (!paginator) return;
 
-        paginator.innerHTML = ''; // Clear existing pagination
-        const ul = paginator.querySelector('ul');
+        let ul = paginator.querySelector('ul');
+        if (!ul) {
+            ul = document.createElement('ul');
+            ul.className = 'flex justify-center items-center -space-x-px h-10 text-base';
+            paginator.innerHTML = '';
+            paginator.appendChild(ul);
+        } else {
+            ul.innerHTML = '';
+        }
 
         if (totalPages <= 1) return;
 

@@ -107,9 +107,8 @@
             // }
 
             const formData = new FormData();
-            formData.append('archivo', file);
-            formData.append('camara_id', camara_id);
-            formData.append('camara_name', camara_name);
+            formData.append('file', file);        // campo que espera /recognize de insightface
+            formData.append('camera_id', camara_id);
 
             resultsContainer.innerHTML = `
                 <div class="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 rounded-md" role="alert">
@@ -119,40 +118,19 @@
 
             const startTime = performance.now();
             try {
-                const response = await window.VigilanteAPI.recognizeImage(formData);
-                const { jobId } = response;
+                const result = await sendToInsightface(formData);
+                const endTime = performance.now();
+                const duration = ((endTime - startTime) / 1000).toFixed(2);
 
-                resultsContainer.innerHTML = `
-                    <div class="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 rounded-md" role="alert">
-                        <p class="font-bold">Tarea Encolada</p>
-                        <p>El trabajo con ID [${jobId}] ha sido recibido y está esperando resultados del worker.</p>
-                    </div>`;
-
-                // window.socket.emit('joinRoom', jobId);
-
-                // window.socket.once('recognitionComplete', (result) => {
-                    const endTime = performance.now();
-                    const duration = ((endTime - startTime) / 1000).toFixed(2);
-                    if (response) {
-                        displayRecognitionResult(response, resultsContainer, duration);
-                    } else {
-                        resultsContainer.innerHTML = `
-                            <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-md" role="alert">
-                                <p class="font-bold">No se recibieron resultados del servidor</p>
-                            </div>`;
-                        // resultsContainer.innerHTML = `<div class="alert alert-danger"><strong>Error:</strong> No se recibieron resultados del servidor.1</div>`;
-                    }
-                    window.UI.loadingSpinner.hide();
-                // });
-
-                // window.socket.once('recognitionError', (error) => {
-                //     resultsContainer.innerHTML = `
-                //         <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-md" role="alert">
-                //             <p class="font-bold">Error en el Procesamiento</p>
-                //             <p>${error.message || 'Ocurrió un error desconocido durante el reconocimiento.'}</p>
-                //         </div>`;
-                //     window.UI.loadingSpinner.hide();
-                // });
+                if (result) {
+                    displayRecognitionResult(result, resultsContainer, duration);
+                } else {
+                    resultsContainer.innerHTML = `
+                        <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-md" role="alert">
+                            <p class="font-bold">No se recibieron resultados del servidor</p>
+                        </div>`;
+                }
+                window.UI.loadingSpinner.hide();
 
             } catch (error) {
                 resultsContainer.innerHTML = `
@@ -281,6 +259,19 @@
         `;
 
         container.innerHTML = fullHTML;
+    }
+
+    async function sendToInsightface(formData) {
+        const url = window.INSIGHTFACE_URL || 'http://localhost:8010/recognize';
+        const resp = await fetch(url, {
+            method: 'POST',
+            body: formData,
+        });
+        if (!resp.ok) {
+            const txt = await resp.text();
+            throw new Error(`Reconocimiento falló (${resp.status}): ${txt}`);
+        }
+        return resp.json();
     }
 
     window.Recognition = {

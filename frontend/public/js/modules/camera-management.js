@@ -192,43 +192,33 @@
 
             if (!cameras || cameras.length === 0) {
                 container.innerHTML = '<div class="col-span-full text-center py-12"><p class="text-gray-500 dark:text-gray-400">No se encontraron cámaras con los filtros seleccionados.</p></div>';
-                window.Utils.renderPaginator('#paginator-container', 0, 1, () => {});
+                window.Utils.renderPaginator('paginator-container', 0, 1, () => {});
                 return;
             }
 
             container.innerHTML = cameras.map(camera => {
                 const statusClass = camera.isCompatible ? 'text-green-500' : 'text-red-500';
-                let cardBodyContent;
-
-                if (camera.isCompatible && camera.hlsStreamUrl) {
-                    cardBodyContent = `<div class="bg-black rounded-md h-48 flex items-center justify-center"><video id="video-stream-${camera.camara_id}" class="w-full h-full" controls autoplay muted playsinline></video></div>`;
-                } else {
-                    cardBodyContent = `<div class="bg-gray-200 dark:bg-gray-700 rounded-md h-48 flex items-center justify-center text-gray-500">Transmisión no disponible</div>`;
-                }
+                const streamId = `video-stream-${camera.camara_id}`;
+                const btnId = `start-stream-${camera.camara_id}`;
+                const cardBodyContent = `<div class="bg-black rounded-md h-48 flex items-center justify-center"><video id="${streamId}" class="w-full h-full" controls muted playsinline></video></div>`;
 
                 return `
                     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
-                        <div class="p-4">
-                            <h5 class="text-lg font-semibold truncate">${camera.nombre}</h5>
-                            <p class="text-sm">Estado: <span class="${statusClass}">${camera.statusMessage}</span></p>
+                        <div class="p-4 flex justify-between items-start">
+                            <div>
+                                <h5 class="text-lg font-semibold truncate">${camera.nombre}</h5>
+                                <p class="text-sm">Estado: <span class="${statusClass}">${camera.statusMessage}</span></p>
+                            </div>
+                            <button id="${btnId}" data-camara-id="${camera.camara_id}" class="px-3 py-1 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700">Ver stream</button>
                         </div>
                         ${cardBodyContent}
                     </div>`;
             }).join('');
 
             cameras.forEach(camera => {
-                if (camera.isCompatible && camera.hlsStreamUrl) {
-                    const video = document.getElementById(`video-stream-${camera.camara_id}`);
-                    const fullStreamUrl = window.VigilanteAPI.baseUrl + camera.hlsStreamUrl;
-
-                    if (video && Hls.isSupported()) {
-                        const hls = new Hls();
-                        hls.loadSource(fullStreamUrl);
-                        hls.attachMedia(video);
-                    } else if (video && video.canPlayType('application/vnd.apple.mpegurl')) {
-                        video.src = fullStreamUrl;
-                    }
-                }
+                const btn = document.getElementById(`start-stream-${camera.camara_id}`);
+                if (!btn) return;
+                btn.addEventListener('click', () => startOnDemandStream(camera.camara_id));
             });
 
             window.Utils.renderPaginator('paginator-container', totalPages, currentPage, (num) => {
@@ -265,5 +255,31 @@
         deleteCamara: (id, name) => { /* Implement if needed */ },
         fGetLiveStream
     };
+
+    async function startOnDemandStream(camara_id) {
+        const videoEl = document.getElementById(`video-stream-${camara_id}`);
+        if (!videoEl) return;
+        window.UI.loadingSpinner.show();
+        try {
+            const resp = await window.VigilanteAPI.startStream(camara_id);
+            // fallback: construir URL si el backend no la envía
+            const hlsUrl = resp?.hlsUrl || `/public/uploads/straming/cam_${camara_id}/index.m3u8`;
+            const fullUrl = hlsUrl.startsWith('http') ? hlsUrl : (window.VigilanteAPI.baseUrl + hlsUrl);
+
+            if (Hls.isSupported()) {
+                const hls = new Hls();
+                hls.loadSource(fullUrl);
+                hls.attachMedia(videoEl);
+            } else if (videoEl.canPlayType('application/vnd.apple.mpegurl')) {
+                videoEl.src = fullUrl;
+            } else {
+                throw new Error('HLS no soportado en este navegador');
+            }
+        } catch (err) {
+            window.UI.showToast(`No se pudo iniciar el stream: ${err.message}`, 'error');
+        } finally {
+            window.UI.loadingSpinner.hide();
+        }
+    }
 
 })(window);
