@@ -1,5 +1,11 @@
 #!/bin/bash
+# Navegar al directorio del script para poder activar el venv
 cd "$(dirname "$0")"
-export PYTHONPATH=$(pwd)
 source venv_stream/bin/activate
-python3 main.py
+
+# Volver al directorio raíz del proyecto
+cd ../../..
+
+# Añadir el directorio raíz a PYTHONPATH y ejecutar el módulo
+export PYTHONPATH=$(pwd)
+python -m src.services.cam_streaming.main
