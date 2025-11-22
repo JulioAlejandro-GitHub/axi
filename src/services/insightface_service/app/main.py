@@ -2,6 +2,7 @@
 
 import uvicorn
 from fastapi import FastAPI, UploadFile, File, Form
+from fastapi.middleware.cors import CORSMiddleware
 from .recognition import RecognitionService
 from ..database.db import Database
 
@@ -13,6 +14,18 @@ ENV_PATH = os.path.join(os.path.dirname(__file__), "..", "..", "..", "..", ".env
 load_dotenv(ENV_PATH)
 
 app = FastAPI()
+
+frontend_urls = os.getenv(
+    "FRONTEND_URLS",
+    "http://localhost:8085,http://127.0.0.1:8085,http://localhost:3000",
+).split(",")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=frontend_urls,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 recognizer: RecognitionService = None
 db: Database = None

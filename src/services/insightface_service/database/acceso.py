@@ -17,10 +17,14 @@ class AccesoDB:
         """
         Registra un acceso. Si el usuario es desconocido (-1), crea un usuario y lo usa.
         """
+        logging.info("registrar_acceso ------ usuario_id=%s", usuario_id)
         with self.db.cursor() as cur:
             if usuario_id == -1:
                 usuario_id = self._crear_usuario_desconocido(cur)
 
+            if usuario_id == "null":
+                return
+            
             sql = """
             INSERT INTO acceso (
                 usuario_id, camara_id, fecha_acceso, tipo, estado,
@@ -46,16 +50,27 @@ class AccesoDB:
         """
         Inserta un usuario desconocido y devuelve su ID.
         """
-        sql = """
-        INSERT INTO usuario (nombre, tipo, estado)
-        VALUES (%s, %s, %s)
-        """
-        params = ("Desconocido", "desconocido", "activo")
-        cur.execute(sql, params)
-        user_id = cur.lastrowid
-        logging.info("Usuario desconocido creado usuario_id=%s", user_id)
-        return user_id
+        logging.info("_crear_usuario_desconocido new()")
+        try:
+            sql = """
+            INSERT INTO usuario (nombre, tipo, estado, password_bcryptjs, local_id, google)
+            VALUES (%s, %s, %s)
+            """
+            params = ("Desconocido", "desconocido", "activo", "1", "2", "0")
+            cur.execute(sql, params)
+            user_id = cur.lastrowid
+            logging.info("Usuario desconocido creado usuario_id=%s", user_id)
+            return user_id
+        
 
+            # except Exception as e:
+            #     # Get the exception message as a string
+            #     error_message = str(e)
+            #     print(f"Caught exception message: {error_message}")
+
+        except (json.JSONDecodeError, TypeError) as e:
+            logging.warning(f"error _crear_usuario_desconocido usuario Desconocido: {e}")
+            return 'null'
 
 # ----------------------------------------------------------------------
 #   FUNCIÓN COMPATIBLE CON RecognitionService
