@@ -31,3 +31,6 @@ package-lock.json
 *.swp
 *.swo
 *~
+
+# Environment
+.env

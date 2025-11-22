@@ -42,12 +42,14 @@ class UsuarioDB:
             nombre="Desconocido",
             tipo="desconocido",
             estado="activo",
-            # TODO: Se debe implementar un método seguro para la generación de contraseñas.
-            password_bcryptjs="1",
+            # Los usuarios desconocidos no deben poder iniciar sesión.
+            # Se establece un valor no válido para el hash de la contraseña.
+            password_bcryptjs="*",
             local_id=default_local_id,
             google="0",
             email=f"unknown_{uuid.uuid4()}@example.com"
         )
         with get_db_connection() as conn:
             result = conn.execute(query)
+            conn.commit()
             return result.inserted_primary_key[0]

@@ -35,7 +35,7 @@ if __name__ == "__main__":
 
 ### Definición de Tablas
 
-Las definiciones de las tablas de la base de datos se encuentran en `src/services/insightface_service/database/db.py` y `src/services/cam_streaming/camera_stream/db_adapter.py`. Estas definiciones se pueden centralizar en el futuro.
+Las definiciones de las tablas de la base de datos se encuentran en `src/services/database/models.py`.
 
 ## Configuración
 

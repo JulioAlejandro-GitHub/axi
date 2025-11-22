@@ -8,3 +8,5 @@ pillow
 aiomysql
 fastapi
 uvicorn
+sqlalchemy
+python-dotenv

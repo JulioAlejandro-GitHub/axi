@@ -35,6 +35,7 @@ class AccesoDB:
 
         with get_db_connection() as conn:
             conn.execute(query)
+            conn.commit()
 
 # ----------------------------------------------------------------------
 #   FUNCIÓN COMPATIBLE CON RecognitionService
